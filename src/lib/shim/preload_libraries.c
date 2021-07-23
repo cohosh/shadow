@@ -87,14 +87,20 @@ static int _getaddrinfo_service(in_port_t* port, const char* service,
         getservbyname_r(service, NULL, &servent, buf, 1024, &result);
     if (rv != 0) {
         // According to getservbyname_r(3): "On error, they return one of the
-        // positive error numbers listed in errors." The only one documented as
-        // possibly being returned by getserbyname_r is ERANGE, indicating that
-        // the buffer was too small. We *could* retry with a bigger buffer, but
-        // that really shouldn't be needed.
-        //
+        // positive error numbers listed in errors." The are two documented as
+        // possibly being returned by getserbyname_r:
+        // ERANGE indicates that the buffer was too small. We *could* retry with
+        // a bigger buffer, but that really shouldn't be needed.
+        // ENOENT indicates that there are no more records in the database, that
+        // the service could not be found.
+        errno = rv;
+        if (rv == ENOENT) {
+            // getaddrinfo(3): "The  requested  service  is not available for the
+            // requested socket type."
+            return EAI_SERVICE;
+        }
         // getaddrinfo(3): "EAI_SYSTEM: Other system error, check errno for
         // details."
-        errno = rv;
         return EAI_SYSTEM;
     }
     if (result == NULL) {
