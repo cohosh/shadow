@@ -160,9 +160,10 @@ bool addrinfo_equals(const struct addrinfo* lhs, const struct addrinfo* rhs) {
         char buf2_##__LINE__[20];                                              \
         int rv##__LINE__ = got;                                                \
         if (rv##__LINE__ != expected) {                                        \
-            printf("Expected: %s ; Got: %s\n",                                 \
+            printf("Expected: %s ; Got: %s ; errno: %s\n",                     \
                    getaddrinfo_rv_string(buf1_##__LINE__, expected),           \
-                   getaddrinfo_rv_string(buf2_##__LINE__, rv##__LINE__));      \
+                   getaddrinfo_rv_string(buf2_##__LINE__, rv##__LINE__),       \
+                   strerror(errno));                                           \
             g_test_fail();                                                     \
         }                                                                      \
     }
